@@ -1,0 +1,153 @@
+Основные проблемы в коде и их ранжирование по критичности:
+Дублирование запросов к API:
+
+Критичность: Высокая
+
+Описание: В функции fetchUrls запросы к API выполняются дважды для каждой подпороды и для основной породы. Это приводит к избыточным запросам и замедлению работы программы.
+
+Пример:
+
+javascript
+Copy code
+axios.get(`https://dog.ceo/api/breed/${breed}/${subBreed}/images/random`).then(res => {
+    allUrls.push(res.data.message);
+    axios.get(`https://dog.ceo/api/breed/${breed}/${subBreed}/images/random`).then(res => {
+        allUrls.push(res.data.message);
+    });
+});
+Отсутствие обработки ошибок:
+
+Критичность: Высокая
+
+Описание: В коде нет обработки ошибок при выполнении запросов к API. Если запрос завершится неудачно, программа просто завершится с ошибкой.
+
+Пример:
+
+javascript
+Copy code
+axios.get(`https://dog.ceo/api/breed/${breed}/list`).then(res => {
+    allSubBreeds = res.data.message || [];
+    fetchUrls(breed);
+});
+Глобальные переменные:
+
+Критичность: Средняя
+
+Описание: Использование глобальных переменных allUrls и allSubBreeds может привести к проблемам с многопоточностью и сложностям в отладке.
+
+Пример:
+
+javascript
+Copy code
+let allUrls: any[] = [];
+let allSubBreeds: any[] = [];
+Неоптимальная структура кода:
+
+Критичность: Средняя
+
+Описание: Функция fetchSubBreeds вызывает fetchUrls, которая, в свою очередь, выполняет запросы к API. Это делает код сложным для понимания и поддержки.
+
+Пример:
+
+javascript
+Copy code
+function fetchSubBreeds(breed: string) {
+    axios.get(`https://dog.ceo/api/breed/${breed}/list`).then(res => {
+        allSubBreeds = res.data.message || [];
+        fetchUrls(breed);
+    });
+}
+Неоптимальное использование axios:
+
+Критичность: Средняя
+
+Описание: Вместо того чтобы выполнять запросы внутри then, можно использовать async/await для более чистого и понятного кода.
+
+Пример:
+
+javascript
+Copy code
+axios.get(`https://dog.ceo/api/breed/${breed}/list`).then(res => {
+    allSubBreeds = res.data.message || [];
+    fetchUrls(breed);
+});
+Отсутствие проверки на наличие токена:
+
+Критичность: Средняя
+
+Описание: В функции u токен жестко закодирован. Если токен недействителен или отсутствует, программа завершится с ошибкой.
+
+Пример:
+
+javascript
+Copy code
+yandexClient.createFolder('test_folder', "AgAAAAAJtest_tokenxkUEdew");
+Неоптимальное использование console.log:
+
+Критичность: Низкая
+
+Описание: Использование console.log для вывода информации о загрузке файлов и создании папки не является оптимальным. Лучше использовать систему логирования.
+
+Пример:
+
+javascript
+Copy code
+console.log("Folder created");
+console.log(`Uploaded: ${name}`);
+Отсутствие проверки на наличие папки:
+
+Критичность: Низкая
+
+Описание: В функции t не проверяется, существует ли папка на Я.Диске. Если папка не существует, программа завершится с ошибкой.
+
+Пример:
+
+javascript
+Copy code
+axios.get('https://cloud-api.yandex.net/v1/disk/resources?path=/test_folder').then(response => {
+    const items = response.data._embedded?.items || [];
+    items.forEach(item => {
+        if (item.type === 'file') {
+            console.log(`File found: ${item.name}`);
+        }
+    });
+});
+Неоптимальное использование forEach:
+
+Критичность: Низкая
+
+Описание: В функции fetchUrls используется forEach для выполнения асинхронных запросов. Это может привести к проблемам с порядком выполнения запросов.
+
+Пример:
+
+javascript
+Copy code
+allSubBreeds.forEach(subBreed => {
+    axios.get(`https://dog.ceo/api/breed/${breed}/${subBreed}/images/random`).then(res => {
+        allUrls.push(res.data.message);
+    });
+});
+Отсутствие проверки на наличие подпород:
+
+Критичность: Низкая
+
+Описание: В функции fetchUrls не проверяется, существуют ли подпороды. Если подпороды отсутствуют, программа все равно выполнит запросы к API.
+
+Пример:
+
+javascript
+Copy code
+if (allSubBreeds.length > 0) {
+    allSubBreeds.forEach(subBreed => {
+        axios.get(`https://dog.ceo/api/breed/${breed}/${subBreed}/images/random`).then(res => {
+            allUrls.push(res.data.message);
+        });
+    });
+}
+
+
+Высокая критичность: Дублирование запросов к API, отсутствие обработки ошибок.
+
+Средняя критичность: Глобальные переменные, неоптимальная структура кода, неоптимальное использование axios, отсутствие проверки на наличие токена.
+
+Низкая критичность: Неоптимальное использование console.log, отсутствие проверки на наличие папки, неоптимальное использование forEach, отсутствие проверки на наличие подпород.
